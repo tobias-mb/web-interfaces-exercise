@@ -1,0 +1,8 @@
+/node_modules
+/emailAuth.json
+/client-heroku.json
+/client-localhost.json
+/client.json
+/dbcredentials.json
+/dbcredentials-heroku.json
+/dbcredentials-localhost.json
