@@ -112,7 +112,7 @@ Promise.all(
         location VARCHAR(255),
         images VARCHAR(64),
         price NUMERIC(12,2),
-        posting_date DATE NOT NULL DEFAULT CURRENT_DATE,
+        posting_date VARCHAR(64),
         delivery VARCHAR(255),
         seller INT
       )`),
