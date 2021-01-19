@@ -237,5 +237,19 @@ router.put('/changePassword', passport.authenticate('basic', {session : false}),
   })
 })
 
+//return id of the username in req.query
+router.get('/id', (req, res) => {
+  db.query('select * from user_table where username = $1', [req.query.username])
+  .then(result => {
+    if(result.rows.length === 0) {  // no such user
+      throw new Error("noUser");
+    }
+    res.json(result.rows[0].id);
+  })
+  .catch(error => {
+    console.error(error);
+    res.sendStatus(404);
+  })
+})
 
 module.exports = router;

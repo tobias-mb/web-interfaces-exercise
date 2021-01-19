@@ -10,10 +10,11 @@ block content
   p POST /users/restore (password reset - {email} in body)
   p GET /users/validation/restorePw/:username/:validationKey (confirm password reset - get the link from email)
   p GET /users/email?username=name (get email address of user {name})
+  p GET /users/id?username=name (get id of user {name})
   p PUT /users/changeEmail (change email address - {username, password} in auth, {email} in body)
   p PUT /users/changePassword (change password - {username, password} in auth, {password} in body)
   p POST /products (create new posting - {username, password} in auth, {title, description, category, location, images(array of strings), price, delivery} in body)
   p PUT /products/:id (change a posting - {username, password} in auth, any changed information in body)
   p DELETE /products/:id (delete a posting - {username, password} in auth)
-  p GET /products?param=something (get postings. query param(s) can be id, title, description, category, location, price, posting_date, delivery, seller (seller currently only by id). Search for price is a max price.)
+  p GET /products?param=something (get postings. query param(s) can be id, title, description, category, location, price, posting_date, delivery, seller (seller only by id). Search for price is a max price.)
 

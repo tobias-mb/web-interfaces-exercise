@@ -54,6 +54,7 @@ router.post('/', passport.authenticate('basic', {session : false}), (req, res) =
     })
 })
 
+// used to change any information in a posting. new information is in req.body
 router.put('/:id', passport.authenticate('basic', {session : false}), (req, res) => {
     db.query('select id,seller from products_table where id=$1', [req.params.id])
     .then(result => {
@@ -111,6 +112,7 @@ router.put('/:id', passport.authenticate('basic', {session : false}), (req, res)
     })
 })
 
+//delete a posting by id
 router.delete('/:id', passport.authenticate('basic', {session : false}), (req, res) => {
     db.query('select seller from products_table where id=$1', [req.params.id])
     .then(result => {
@@ -140,6 +142,7 @@ router.delete('/:id', passport.authenticate('basic', {session : false}), (req, r
     })
 })
 
+//get postings. Specify by query params
 router.get('/', (req, res) => {
     let answer = {};
     let sqlString = 'select * from products_table';
