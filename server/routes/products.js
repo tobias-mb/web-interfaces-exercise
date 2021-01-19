@@ -17,6 +17,17 @@ function formatDate(date) { // YYYY-MM-DD format
     return [year, month, day].join('-');
 }
 
+/** create new posting. Need {username, password} in auth
+ * {
+ *      "title":"a title",
+ *      "description":"a desc",
+ *      "category":"category tags",
+ *      "location":"location",
+ *      "images":["link1","link2","link3"],
+ *      "price":19.99,
+ *      "delivery":"a delivery method"
+ * }
+ */
 router.post('/', passport.authenticate('basic', {session : false}), (req, res) => {
     let imageIDs = [];
     //put images into image table, return their ID
@@ -31,7 +42,7 @@ router.post('/', passport.authenticate('basic', {session : false}), (req, res) =
     })
     .then(result => {
         return Promise.all( imageIDs.map(id => {    //update the reference from images to owner posting
-            return db.query('update images_table set ownerPosting=$1 where id=$2',[result.rows[0].id,id])
+            return db.query('update images_table set owner_posting=$1 where id=$2',[result.rows[0].id,id])
         }))
     })
     .then(result => {
@@ -55,7 +66,7 @@ router.put('/:id', passport.authenticate('basic', {session : false}), (req, res)
             throw new Error('not owner');
         }
         if(req.body.images){ //delete old images
-            return db.query('delete from images_table where ownerPosting=$1',[result.rows[0].id])
+            return db.query('delete from images_table where owner_posting=$1',[result.rows[0].id])
         }else{
             return true;
         }
@@ -63,7 +74,7 @@ router.put('/:id', passport.authenticate('basic', {session : false}), (req, res)
     .then(result => {
         if(req.body.images){
             return Promise.all(req.body.images.map(img => { //insert new images
-                return db.query('insert into images_table (ownerPosting, title, link) values($1, $2, $3) returning id', [req.params.id, 'title', img])
+                return db.query('insert into images_table (owner_posting, title, link) values($1, $2, $3) returning id', [req.params.id, 'title', img])
             }))
         }else{
             return true;
@@ -101,7 +112,7 @@ router.put('/:id', passport.authenticate('basic', {session : false}), (req, res)
 })
 
 router.delete('/:id', passport.authenticate('basic', {session : false}), (req, res) => {
-    db.query('select seller,images from products_table where id=$1', [req.params.id])
+    db.query('select seller from products_table where id=$1', [req.params.id])
     .then(result => {
         if(result.rows.length === 0){ //no matching id found
             res.sendStatus(404);
@@ -111,10 +122,11 @@ router.delete('/:id', passport.authenticate('basic', {session : false}), (req, r
             res.sendStatus(403);
             throw new Error('not owner');
         }
-        return Promise.all(result.rows[0].images.split(',').map(id => { //delete connected images
+        return db.query('delete from images_table where owner_posting=$1',[req.params.id]) //delete connected images
+        /*return Promise.all(result.rows[0].images.split(',').map(id => { //delete connected images
             console.log(id);
             return db.query('delete from images_table where id=$1', [id])
-        }))
+        }))*/
     })
     .then(result => {
         return db.query('delete from products_table where id=$1', [req.params.id])
@@ -129,6 +141,7 @@ router.delete('/:id', passport.authenticate('basic', {session : false}), (req, r
 })
 
 router.get('/', (req, res) => {
+    let answer = {};
     let sqlString = 'select * from products_table';
     let sqlArray = [];
     let iter = 1;
@@ -147,7 +160,6 @@ router.get('/', (req, res) => {
                 }else if(key === 'price'){  // treat it as a max price
                     sqlString += ` $${iter} > ${key}`;
                     sqlArray.push(value);
-                    //SELECT city FROM cities WHERE 80 < any (temps);
                 }else { // treat strings the same
                     sqlString+=` ${key} ILIKE $${iter}`;
                     sqlArray.push(nameLike);
@@ -161,7 +173,32 @@ router.get('/', (req, res) => {
 
     db.query(sqlString,sqlArray)
     .then(result => {
-        res.json(result.rows)
+        answer= result.rows;
+        return Promise.all(answer.map(p => {    // add seller name and email information
+            return db.query('select username, email from user_table where id = $1',[p.seller])
+        }))
+    })
+    .then(result => {
+        if(result.length > 0){
+            for(let i=0; i<result.length; ++i){
+                answer[i].seller_name = result[i].rows[0].username;
+                answer[i].seller_email = result[i].rows[0].email;
+            }
+        }
+        return Promise.all(answer.map(p => {    // replace image ids with images
+            return db.query('select link from images_table where owner_posting = $1',[p.id])
+        }))
+    })
+    .then(result => {
+        if(result.length > 0){
+            for(let i=0; i<result.length; ++i){
+                answer[i].images = [];
+                for(let j=0; j<result[i].rows.length; ++j){
+                    answer[i].images.push( result[i].rows[j].link );
+                }
+            }
+        }
+        res.json(answer);
     })
     .catch(error => {
         console.error(error);

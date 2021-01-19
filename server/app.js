@@ -118,7 +118,7 @@ Promise.all(
       )`),
       db.query(`CREATE TABLE IF NOT EXISTS public.images_table(
         id SERIAL PRIMARY KEY,
-        ownerPosting INT,
+        owner_posting INT,
         title VARCHAR(64),
         link VARCHAR(128)
       )`)
