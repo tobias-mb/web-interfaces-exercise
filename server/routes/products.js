@@ -49,7 +49,7 @@ router.post('/', passport.authenticate('basic', {session : false}), (req, res) =
         res.sendStatus(201);
     })
     .catch(error => {
-        console.error(err);
+        console.error(error);
         res.sendStatus(500);
     })
 })

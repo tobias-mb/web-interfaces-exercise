@@ -120,7 +120,7 @@ Promise.all(
         id SERIAL PRIMARY KEY,
         owner_posting INT,
         title VARCHAR(64),
-        link VARCHAR(128)
+        link VARCHAR(255)
       )`)
       // Add more create table statements here
   ]
