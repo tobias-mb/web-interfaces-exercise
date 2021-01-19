@@ -1,0 +1,64 @@
+{
+  "products": [
+    {
+      "title": "some Title",
+      "description": "a little Text to describe the product",
+      "category": "category tags",
+      "location": "city, county, etc",
+      "images": ["link1","link2","link3"],
+      "price": 25,
+      "delivery": "a delivery service, maybe pickup?"
+    },
+    {
+      "title": "Banana Boat",
+      "description": "An inflatable float, looking like a yellow banana.",
+      "category": "Toy, Boat, Beach",
+      "location": "Helsinki",
+      "images": ["https://cdn.swoozies.com/product-images/311720/238010-500.jpg",
+                 "https://sc04.alicdn.com/kf/HTB13fOyhTwKL1JjSZFgq6z6aVXa5.jpg",
+                 "https://m.alternate.de/p/160x160/1/Bestway_Badeinsel_Banana_Float_43160__Schwimmliege@@1so3bb0l_31.jpg",
+                 "https://ae01.alicdn.com/kf/HTB1O72RGMmTBuNjy1Xbq6yMrVXaN.jpg"
+                ],
+      "price": 19.99,
+      "delivery": "pickup, UPS"
+    },
+    {
+      "title": "Ananas",
+      "description": "Delicious fruit",
+      "category": "Fruit, Food",
+      "location": "Lidl",
+      "images": ["https://img.rewe-static.de/5408210/24569466_digital-image.png",
+                 "https://upload.wikimedia.org/wikipedia/commons/thumb/6/67/Ananaspflanze.jpg/1200px-Ananaspflanze.jpg",
+                 "https://www.fairfood.bio/storage/media/817/conversions/Ananas-Plantage3_webseite-c.jpg",
+                 "https://www.iva.de/sites/default/files/styles/gallery_popup/public/benutzer/%25uid/magazinbilder/ananas_reif_506446798m_istock_0.jpg?itok=UC11RZlA",
+                 "https://images.derstandard.at/img/2019/10/01/ananas.jpg?w=1200&h=600&s=d69b1712",
+                 "https://www.5amtag.ch/wp-content/uploads/2016/08/ananas-1.jpg"
+                ],
+      "price": 5.50,
+      "delivery": "must buy in store"
+    },
+    {
+      "title": "Bicyle",
+      "description": "A super fantastic bicyle. The best there is.",
+      "category": "Vehicle, Bicyle",
+      "location": "Oulu, Finland",
+      "images": ["https://cdn.vox-cdn.com/thumbor/nzIZhT8D3-o_aAas6euso9kfQq4=/1400x1050/filters:format(jpeg)/cdn.vox-cdn.com/uploads/chorus_asset/file/20071273/Yamaha_Civante_Action_VV906564.jpg",
+                 "https://www.google.com/url?sa=i&url=https%3A%2F%2Fthebicycleshopinc.com%2F&psig=AOvVaw3xN6_ydNCmIpvHUW5bQg-Q&ust=1611142716480000&source=images&cd=vfe&ved=2ahUKEwj--dO79KfuAhVC0OAKHXmYClQQjRx6BAgAEAc"
+                ],
+      "price": 99.99,
+      "delivery": "a delivery service, maybe pickup?"
+    },
+    {
+      "title": "Solid Gold Bar",
+      "description": "because why wouldn't you buy gold on the internet?",
+      "category": "Gold",
+      "location": "Planet Earth",
+      "images": ["https://5.imimg.com/data5/KY/XG/IT/SELLER-88265349/gold-bar-500x500.png",
+                 "https://online.kitco.com/products/100_oz_Gold_Good_Delivery_List_Bar_9999_1025/enu-100-oz-Gold-Good-Delivery-List-Bar-9999-1025-20000-2.jpg",
+                 "https://www.bullionvault.com/gold-guide/sites/media-cms-en/files/palet-gold.png"
+                ],
+      "price": 499.99,
+      "delivery": "Reindeer-Sleigh"
+    }
+  ]
+}
