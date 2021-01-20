@@ -31,6 +31,7 @@ function ValidateEmail(mail)
 /* create new user
 needs username, email, password in req.body  */
 router.post('/', (req,res) => {
+  var insertID = 0;
   if(!req.body.password || !req.body.username || !req.body.email ){ //bad request
     console.log("username or password missing");
     res.status(400);
@@ -55,9 +56,12 @@ router.post('/', (req,res) => {
   
   bcrypt.hash(req.body.password, saltrounds)
   .then(hash => {
-    return db.query('insert into user_table (username, email, password, activated) values($1, $2, $3, $4)', [req.body.username, req.body.email, hash, false])
+    return db.query('insert into user_table (username, email, password, activated) values($1, $2, $3, $4) returning id', [req.body.username, req.body.email, hash, false])
   })
   .then(result => {
+    if(result.rows.length > 0){
+      insertID = result.rows[0].id
+  }
     console.log('created new user: ' + req.body.username + ' (not validated yet)');
     return db.query('insert into validation_table (username, validationkey) values($1, $2)', [req.body.username, validationKey]);
   })
@@ -68,8 +72,7 @@ router.post('/', (req,res) => {
     console.log("email sent")
     res.status(201);
     res.json({
-      username: req.body.username,
-      validationKey: validationKey
+      id : insertID
     })
   })
   .catch(error => {
@@ -143,11 +146,7 @@ router.post('/restore', (req, res) => {
   })
   .then(result => {
     console.log("email sent");
-    res.status(201);
-    res.json({
-      username: foundUser.username,
-      validationKey : validationKey
-    })
+    res.sendStatus(201);
   })
   .catch(err => {
     res.status(404);
