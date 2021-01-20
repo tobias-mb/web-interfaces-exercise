@@ -12,19 +12,6 @@ const cloudinaryAuth = require('../cloudinaryAuth.json');
 cloudinary.config(cloudinaryAuth);
 const { v4: uuidv4 } = require('uuid');
 
-function formatDate(date) { // YYYY-MM-DD format
-    var d = new Date(date),
-        month = '' + (d.getMonth() + 1),
-        day = '' + d.getDate(),
-        year = d.getFullYear();
-
-    if (month.length < 2) 
-        month = '0' + month;
-    if (day.length < 2) 
-        day = '0' + day;
-
-    return [year, month, day].join('-');
-}
 //used to upload files to Cloudinary
 const streamUpload = (fileBuffer, username) => {
     if(!username){
@@ -74,6 +61,7 @@ const fileDeleter = (fileName, username) => {
 router.post('/', [passport.authenticate('basic', {session : false}), fileUpload.array('images')], (req, res) => {
     if(!req.body.title){    //all other fields are optional, but title is mandatory
         res.sendStatus(400);
+        return;
     }
     let imageIDs = [];
     //upload images to Cloudinary, save the URLs
@@ -89,9 +77,8 @@ router.post('/', [passport.authenticate('basic', {session : false}), fileUpload.
     })
     .then(result => {
         imageIDs = result.map(r => r.rows[0].id)  //get the IDs of images
-        let today = new Date();
-        return db.query('insert into products_table (title, description, category, location, images, price, delivery, seller, posting_date) values($1, $2, $3, $4, $5, $6, $7, $8, $9) returning id',
-            [req.body.title, req.body.description, req.body.category, req.body.location, imageIDs.toString(), req.body.price, req.body.delivery, req.user.id, formatDate(today) ]);
+        return db.query('insert into products_table (title, description, category, location, images, price, delivery, seller) values($1, $2, $3, $4, $5, $6, $7, $8) returning id',
+            [req.body.title, req.body.description, req.body.category, req.body.location, imageIDs.toString(), req.body.price, req.body.delivery, req.user.id ]);
     })
     .then(result => {
         return Promise.all( imageIDs.map(id => {    //update the reference from images to owner posting
@@ -168,7 +155,7 @@ router.put('/:id', [passport.authenticate('basic', {session : false}), fileUploa
         let today = new Date();
         let columnsArray = ['title', 'description', 'category', 'location', 'price', 'delivery'];
         let sqlString = 'update products_table set posting_date=$2';
-        let sqlArray = [req.params.id, formatDate(today)];
+        let sqlArray = [req.params.id, today];
         let iter = 3;
         for(let i = 0; i < columnsArray.length; ++i){   //if req.body tells us to update that property, then add it to SQL request
             if (req.body[columnsArray[i]]){
@@ -251,6 +238,9 @@ router.get('/', (req, res) => {
                     sqlArray.push(value);
                 }else if(key === 'price'){  // treat it as a max price
                     sqlString += ` $${iter} > ${key}`;
+                    sqlArray.push(value);
+                }else if(key === 'posting_date'){   // check for post after this
+                    sqlString += ` $${iter} < ${key}`;
                     sqlArray.push(value);
                 }else { // treat strings the same
                     sqlString+=` ${key} ILIKE $${iter}`;
