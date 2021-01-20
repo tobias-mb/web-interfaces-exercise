@@ -232,7 +232,7 @@ router.get('/email', (req, res) => {
 
 //change email of a user. needs new email in req.body
 router.put('/changeEmail', passport.authenticate('basic', {session : false}), (req, res) => {
-  if(!req.query.email){
+  if(!req.body.email){
     res.status(400);
     res.send("missing email");
     return;
