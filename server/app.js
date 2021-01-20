@@ -16,7 +16,6 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var loginRouter = require('./routes/login');
 var productsRouter = require('./routes/products');
-var uploadRouter = require('./routes/upload');
 /* ---------------- routers done ---------------- */
 
 var app = express();
@@ -40,7 +39,6 @@ app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/login', loginRouter);
 app.use('/products', productsRouter);
-app.use('/upload', uploadRouter);
 /* ---------------- routes done -------------------- */
 
 //Authorization need username & hashed password in Auth field of request

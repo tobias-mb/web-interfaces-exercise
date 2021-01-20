@@ -7,7 +7,8 @@ const passport = require('passport');
 router.post('/', passport.authenticate('basic', {session : false}), (req, res) => {
     console.log("successful log in for user:")
     console.log(req.user);
-    res.sendStatus(200);
+    res.status(200);
+    res.json({id: req.user.id})
   })
 
 module.exports = router;

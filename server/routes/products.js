@@ -14,7 +14,7 @@ const { v4: uuidv4 } = require('uuid');
 
 //used to upload files to Cloudinary
 const streamUpload = (fileBuffer, username) => {
-    if(!username){
+    if(!username){  // shouldn't happen; but makes sure public_id is always a valid string
         username = "default";
     }
     const uniqueFilename = uuidv4();
@@ -60,10 +60,12 @@ const fileDeleter = (fileName, username) => {
  */
 router.post('/', [passport.authenticate('basic', {session : false}), fileUpload.array('images')], (req, res) => {
     if(!req.body.title){    //all other fields are optional, but title is mandatory
-        res.sendStatus(400);
+        res.status(400);
+        res.send("post must have titlte");
         return;
     }
-    let imageIDs = [];
+    var postID = 0;
+    var imageIDs = [];
     //upload images to Cloudinary, save the URLs
     Promise.all(req.files.map( f => {
         return streamUpload(f, req.user.username);
@@ -81,12 +83,18 @@ router.post('/', [passport.authenticate('basic', {session : false}), fileUpload.
             [req.body.title, req.body.description, req.body.category, req.body.location, imageIDs.toString(), req.body.price, req.body.delivery, req.user.id ]);
     })
     .then(result => {
+        if(result.rows.length > 0){
+            postID = result.rows[0].id
+        }
         return Promise.all( imageIDs.map(id => {    //update the reference from images to owner posting
-            return db.query('update images_table set owner_posting=$1 where id=$2',[result.rows[0].id,id]);
+            return db.query('update images_table set owner_posting=$1 where id=$2',[postID, id]);
         }))
     })
     .then(result => {
-        res.sendStatus(201);
+        res.status(201);
+        res.json({
+            id : postID
+        });
     })
     .catch(error => {
         console.error(error);
@@ -103,11 +111,11 @@ router.put('/:id', [passport.authenticate('basic', {session : false}), fileUploa
     db.query('select seller from products_table where id=$1', [req.params.id])    // product to change
     .then(result => {
         if(result.rows.length === 0){ //no matching id found
-            res.sendStatus(404);
+            res.status(404);
             throw new Error('item not found');
         }
         if (result.rows[0].seller !== req.user.id){ //can only change own posting
-            res.sendStatus(403);
+            res.status(403);
             throw new Error('not owner');
         }
 
@@ -174,11 +182,11 @@ router.put('/:id', [passport.authenticate('basic', {session : false}), fileUploa
         return db.query(sqlString, sqlArray)
     })
     .then(result => {
-        res.sendStatus(201);
+        res.sendStatus(200);
     })
     .catch(error => {
         console.error(error);
-        res.sendStatus(500);
+        res.send(error.message);
     })
 })
 
@@ -187,11 +195,11 @@ router.delete('/:id', passport.authenticate('basic', {session : false}), (req, r
     db.query('select seller from products_table where id=$1', [req.params.id])
     .then(result => {
         if(result.rows.length === 0){ //no matching id found
-            res.sendStatus(404);
+            res.status(404);
             throw new Error('item not found');
         }
         if (result.rows[0].seller !== req.user.id){ //can only change own posting
-            res.sendStatus(403);
+            res.status(403);
             throw new Error('not owner');
         }
 
@@ -214,7 +222,7 @@ router.delete('/:id', passport.authenticate('basic', {session : false}), (req, r
     })
     .catch(error => {
         console.error(error);
-        res.sendStatus(500);
+        res.send(error.message);
     })
 })
 
@@ -284,7 +292,8 @@ router.get('/', (req, res) => {
     })
     .catch(error => {
         console.error(error);
-        res.sendStatus(500);
+        res.status(400);
+        res.send("invalid search params")
     })
 })
 

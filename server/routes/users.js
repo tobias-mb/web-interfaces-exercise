@@ -33,12 +33,14 @@ needs username, email, password in req.body  */
 router.post('/', (req,res) => {
   if(!req.body.password || !req.body.username || !req.body.email ){ //bad request
     console.log("username or password missing");
-    res.sendStatus(400);
+    res.status(400);
+    res.send("username or password missing");
     return;
   }
   if(!ValidateEmail(req.body.email) ){ // not an email address
     console.log("invalid email");
-    res.sendStatus(400);
+    res.status(400);
+    res.send("invalid email")
     return;
   }
 
@@ -64,12 +66,17 @@ router.post('/', (req,res) => {
   })
   .then(result => {
     console.log("email sent")
-    res.sendStatus(201);
+    res.status(201);
+    res.json({
+      username: req.body.username,
+      validationKey: validationKey
+    })
   })
   .catch(error => {
-    console.log('create user failed (users must be unique):');
+    console.log('create user failed (users must be unique)');
     console.error(error);
-    res.sendStatus(409);
+    res.status(409);
+    res.send('username and email must be unique ');
   })
 })
 
@@ -96,7 +103,8 @@ router.get('/validation/newUser/:username/:validationKey', (req, res) => {
   })
   .catch(error => {
     console.error(error);
-    res.sendStatus(404);
+    res.status(404);
+    res.send(error.message);
   })
 })
 
@@ -104,7 +112,8 @@ router.get('/validation/newUser/:username/:validationKey', (req, res) => {
 router.post('/restore', (req, res) => {
   if( !req.body.email || !ValidateEmail(req.body.email) ){ // not an email address
     console.log("invalid email");
-    res.sendStatus(400);
+    res.status(400);
+    res.send("invalid email");
     return;
   }
 
@@ -134,11 +143,16 @@ router.post('/restore', (req, res) => {
   })
   .then(result => {
     console.log("email sent");
-    res.sendStatus(200);
+    res.status(201);
+    res.json({
+      username: res.user.username,
+      validationKey : validationKey
+    })
   })
   .catch(err => {
-    res.sendStatus(404);
+    res.status(404);
     console.error(err);
+    res.send(error.message);
   })
 })
 
@@ -190,14 +204,17 @@ router.get('/validation/restorePw/:username/:validationKey', (req, res) => {
   })
   .catch(error => {
     console.error(error);
-    res.sendStatus(404);
+    res.status(404);
+    res.send(error.message);
   })
 })
 
 //return email for the username in req.query
 router.get('/email', (req, res) => {
   if(!req.query.username){
-    res.sendStatus(400);
+    res.status(400);
+    res.send("missing username");
+    return;
   }
   db.query('select * from user_table where username = $1', [req.query.username])
   .then(result => {
@@ -208,27 +225,35 @@ router.get('/email', (req, res) => {
   })
   .catch(error => {
     console.error(error);
-    res.sendStatus(404);
+    res.status(404);
+    res.send("user doesn't exist");
   })
-  
 })
 
 //change email of a user. needs new email in req.body
 router.put('/changeEmail', passport.authenticate('basic', {session : false}), (req, res) => {
+  if(!req.query.email){
+    res.status(400);
+    res.send("missing email");
+    return;
+  }
   db.query('update user_table set email=$1 where username=$2', [req.body.email, req.user.username])
   .then(result => {
     res.sendStatus(200);
   })
   .catch(error => {
     console.error(error);
-    res.sendStatus(500);
+    res.status(409);
+    res.send("This email already has an account");
   })
 })
 
 //change Pw of user. needs new password in req.body
 router.put('/changePassword', passport.authenticate('basic', {session : false}), (req, res) => {
   if(!req.body.password) {
-    res.sendStatus(400);
+    res.status(400);
+    res.send("password missing");
+    return;
   }
   bcrypt.hash(req.body.password, saltrounds)
   .then(hash => {
@@ -246,7 +271,9 @@ router.put('/changePassword', passport.authenticate('basic', {session : false}),
 //return id of the username in req.query
 router.get('/id', (req, res) => {
   if(!req.query.username){
-    res.sendStatus(400);
+    res.status(400);
+    res.send("username missing");
+    return;
   }
   db.query('select * from user_table where username = $1', [req.query.username])
   .then(result => {
@@ -257,7 +284,8 @@ router.get('/id', (req, res) => {
   })
   .catch(error => {
     console.error(error);
-    res.sendStatus(404);
+    res.status(404);
+    res.send("user doesn't exist.");
   })
 })
 
