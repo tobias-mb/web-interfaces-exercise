@@ -1,0 +1,522 @@
+openapi: 3.0.0
+info:
+  title: web-interfaces-exercise
+  version: '1.0'
+  description: API documentation for the graded exercise in web interfaces course
+  contact:
+    email: tobias.mb@gmx.de
+servers:
+  - url: 'https://webinterfaces26071990.herokuapp.com'
+paths:
+  /login:
+    post:
+      summary: Log in
+      operationId: post-login
+      responses:
+        '200':
+          description: 'returns the id of the user, who is doing the log in'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 3
+              examples:
+                example-1:
+                  value:
+                    id: 3
+        '401':
+          description: Wrong username or password
+      description: For log in. check if username + password is (matching) in the server.
+      security:
+        - BasicAuth: []
+  /users:
+    post:
+      summary: Create new user
+      operationId: post-users
+      responses:
+        '201':
+          description: returns the id of the new user
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 5
+              examples:
+                example-1:
+                  value:
+                    id: 5
+        '400':
+          description: one of the fields is missing.
+        '409':
+          description: username or email is already in use
+      description: |-
+        Create a new user.
+        Needs email verification.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  example: tester
+                password:
+                  type: string
+                  example: '1234'
+                email:
+                  type: string
+                  example: notareal@email.com
+              required:
+                - username
+                - password
+                - email
+            examples:
+              example-1:
+                value:
+                  username: tester
+                  password: '1234'
+                  email: notareal@email.com
+        description: Information of the new user.
+  '/users/validation/newUser/{username}/{validationKey}':
+    parameters:
+      - schema:
+          type: string
+          example: tester
+        name: username
+        in: path
+        required: true
+      - schema:
+          type: string
+          example: '2316512'
+        name: validationKey
+        in: path
+        required: true
+    get:
+      summary: Email verification for new user
+      tags: []
+      responses:
+        '200':
+          description: Displays a "succes" html
+          content:
+            text/html:
+              schema:
+                type: object
+                properties: {}
+        '404':
+          description: Wrong user or verification code
+      operationId: get-validation-email
+      description: |-
+        This route is used to verify the email address of a new user.
+        A matching link is sent in email, after POST /users
+  /users/restore:
+    post:
+      summary: Restore Password
+      operationId: post-users-restore
+      responses:
+        '201':
+          description: Created
+        '400':
+          description: email is not a valid email address
+        '404':
+          description: No matching user
+      description: |-
+        Used to reset a password.
+        Needs email verification.
+        In the email there is also the username.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: notareal@email.com
+              required:
+                - email
+            examples:
+              example-1:
+                value:
+                  email: notareal@email.com
+        description: 'The email of the user, who wants to reset the password.'
+    parameters: []
+  '/users/validation/restorePw/{username}/{validationKey}':
+    get:
+      summary: Password reset verification
+      tags: []
+      responses:
+        '200':
+          description: Displays a "success" html.
+        '404':
+          description: Wrong username or verification code
+      operationId: get-validation-reset-password
+      description: |-
+        This route is used to verify a password reset request.
+        A matching link is sent in email, after POST /users/restore
+    parameters:
+      - schema:
+          type: string
+          example: tester
+        name: username
+        in: path
+        required: true
+      - schema:
+          type: string
+          example: '2316512'
+        name: validationKey
+        in: path
+        required: true
+  /users/email:
+    get:
+      summary: GET email
+      tags: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  email:
+                    type: string
+                    example: notareal@email.com
+              examples:
+                example-1:
+                  value:
+                    email: notareal@email.com
+        '400':
+          description: username is missing
+        '404':
+          description: username not found
+      operationId: get-users-email
+      description: Get the email of the user in the query.
+      parameters:
+        - schema:
+            type: string
+            example: tester
+          in: query
+          name: username
+          required: true
+  /users/changeEmail:
+    put:
+      summary: Change email address of a user
+      operationId: put-users-changeEmail
+      responses:
+        '200':
+          description: email was changed
+        '400':
+          description: missing a new email
+        '409':
+          description: This email address is already in use.
+      description: Change email address of a user.
+      security:
+        - BasicAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: notareal@email.com
+              required:
+                - email
+            examples:
+              example-1:
+                value:
+                  email: notareal@email.com
+        description: new email address
+  /users/changePassword:
+    put:
+      summary: Change Password
+      operationId: put-users-changePassword
+      responses:
+        '200':
+          description: password changed
+        '400':
+          description: missing new password
+      description: Change the password of an account.
+      security:
+        - BasicAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                password:
+                  type: string
+                  example: '1234'
+              required:
+                - password
+        description: new password
+  /users/id:
+    get:
+      summary: Get userID
+      tags: []
+      responses:
+        '200':
+          description: returns the user id
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 2
+              examples:
+                example-1:
+                  value:
+                    id: 2
+      operationId: get-users-id
+      description: get the id of a user
+      parameters:
+        - schema:
+            type: string
+            example: tester
+          in: query
+          name: username
+          required: true
+  /products:
+    post:
+      summary: Create new product
+      operationId: post-products
+      responses:
+        '201':
+          description: returns the id of the new product
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: number
+                    example: 7
+        '400':
+          description: Every item must have a title
+      description: Post a new product to the server.
+      security:
+        - BasicAuth: []
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  example: a title
+                description:
+                  type: string
+                  example: a few word to describe the product
+                category:
+                  type: string
+                  example: 'dog, mammal'
+                location:
+                  type: string
+                  example: 'Helsinki, Finland'
+                price:
+                  type: number
+                  description: only 2 decimals are saved
+                  example: 14.99
+                delivery:
+                  type: string
+                  example: 'by bike, pick-up'
+                images:
+                  type: string
+                  format: binary
+                  example: dog.jpg
+                  description: >-
+                    This is the multipart component. So can have multiple
+                    "images"
+              required:
+                - title
+        description: Information about the new product. Only title is mandatory
+    get:
+      summary: GET products
+      operationId: get-products
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/product'
+        '400':
+          description: invalid search params
+      description: >
+        Get all products, matching the query params.
+
+        No params = get all
+
+        Possible query params are id, title, description, category, location,
+        images, price, posting_date, delivery, seller.
+
+        A combination is also possible (by using '&').
+
+        price will search for cheaper products
+
+        posting_date will search for newer posts
+
+        seller is by id (Note the GET uesrs/id route)
+      parameters:
+        - schema:
+            type: string
+            example: title=boat&location=oulu
+          in: query
+          name: param
+          description: param can be any of the ones mentioned in desc
+  '/products/{id}':
+    parameters:
+      - schema:
+          type: integer
+          example: 2
+        name: id
+        in: path
+        required: true
+    put:
+      summary: Change a product
+      operationId: put-products-id
+      responses:
+        '200':
+          description: OK
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+      security:
+        - BasicAuth: []
+      description: >-
+        change a product by id. All information is optional. Only need to
+        include what you want to change.
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  example: title
+                description:
+                  type: string
+                  example: some text
+                category:
+                  type: string
+                  example: tags
+                location:
+                  type: string
+                  example: 'city, county, etc'
+                price:
+                  type: number
+                  example: 12.56
+                delivery_type:
+                  type: string
+                  example: UPS. Santa Clause
+                images:
+                  type: string
+                  format: binary
+                  example: dog.jpg
+                  description: This is the multipart component.
+        description: information that should be changed
+    delete:
+      summary: Delete product
+      operationId: delete-products-id
+      responses:
+        '204':
+          description: delete successfll
+        '403':
+          description: only owner is allowed to change a product
+        '404':
+          description: No Product with that id
+      description: Delete the product with the specified id.
+      security:
+        - BasicAuth: []
+components:
+  schemas:
+    product:
+      title: product
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        title:
+          type: string
+          example: a Title
+        description:
+          type: string
+          example: a few words to describe the product
+        category:
+          type: string
+          example: 'fun, dog, mammal'
+        location:
+          type: string
+          example: 'Helsinki, Finland'
+        images:
+          type: array
+          description: image URLs
+          items:
+            type: string
+            example: '["link1", "link2", "link3"]'
+        price:
+          type: number
+          example: 13.53
+          description: saves 2 decimals
+        posting_date:
+          type: string
+          format: date
+          example: '2021-01-19'
+          description: a date string
+        delivery:
+          type: string
+          example: '"pick-up, UPS"'
+        seller:
+          type: integer
+          description: seller id
+          example: 2
+        seller_name:
+          type: string
+          example: tester
+        seller_email:
+          type: string
+          example: notareal@email.com
+      required:
+        - id
+        - title
+        - posting_date
+        - seller
+      x-examples:
+        example-1:
+          id: 1
+          title: a Title
+          description: a few words to describe the product
+          category: 'fun, dog, mammal'
+          location: 'Helsinki, Finland'
+          images:
+            - link1
+            - link2
+            - link3
+          price: 13.53
+          posting_date: '2021-01-19'
+          delivery: '"pick-up, UPS"'
+          seller: 2
+          seller_name: tester
+          seller_email: notareal@email.com
+  securitySchemes:
+    BasicAuth:
+      type: http
+      scheme: basic
+      description: Basic Scheme authentication with username + password
