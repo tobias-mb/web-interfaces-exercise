@@ -145,7 +145,7 @@ router.post('/restore', (req, res) => {
     console.log("email sent");
     res.status(201);
     res.json({
-      username: res.user.username,
+      username: foundUser.username,
       validationKey : validationKey
     })
   })
