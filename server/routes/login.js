@@ -10,4 +10,4 @@ router.post('/', passport.authenticate('basic', {session : false}), (req, res) =
     res.sendStatus(200);
   })
 
-  module.exports = router;
+module.exports = router;

@@ -196,6 +196,9 @@ router.get('/validation/restorePw/:username/:validationKey', (req, res) => {
 
 //return email for the username in req.query
 router.get('/email', (req, res) => {
+  if(!req.query.username){
+    res.sendStatus(400);
+  }
   db.query('select * from user_table where username = $1', [req.query.username])
   .then(result => {
     if(result.rows.length === 0) {  // no such user
@@ -224,6 +227,9 @@ router.put('/changeEmail', passport.authenticate('basic', {session : false}), (r
 
 //change Pw of user. needs new password in req.body
 router.put('/changePassword', passport.authenticate('basic', {session : false}), (req, res) => {
+  if(!req.body.password) {
+    res.sendStatus(400);
+  }
   bcrypt.hash(req.body.password, saltrounds)
   .then(hash => {
     return db.query('update user_table set password=$1 where username=$2', [hash, req.user.username])
@@ -239,6 +245,9 @@ router.put('/changePassword', passport.authenticate('basic', {session : false}),
 
 //return id of the username in req.query
 router.get('/id', (req, res) => {
+  if(!req.query.username){
+    res.sendStatus(400);
+  }
   db.query('select * from user_table where username = $1', [req.query.username])
   .then(result => {
     if(result.rows.length === 0) {  // no such user

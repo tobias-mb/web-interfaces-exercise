@@ -1,6 +1,8 @@
 /node_modules
 /emailAuth.json
+/cloudinaryAuth.json
 /client-heroku.json
 /client-localhost.json
 /dbcredentials-heroku.json
 /dbcredentials-localhost.json
+/routes/upload.js
