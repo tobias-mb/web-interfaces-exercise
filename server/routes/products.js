@@ -98,7 +98,8 @@ router.post('/', [passport.authenticate('basic', {session : false}), fileUpload.
     })
     .catch(error => {
         console.error(error);
-        res.sendStatus(500);
+        res.status(500)
+        res.send(error.message);
     })
 })
 
@@ -293,7 +294,7 @@ router.get('/', (req, res) => {
     .catch(error => {
         console.error(error);
         res.status(400);
-        res.send("invalid search params")
+        res.send(error.message)
     })
 })
 

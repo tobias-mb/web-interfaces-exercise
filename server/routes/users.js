@@ -79,7 +79,7 @@ router.post('/', (req,res) => {
     console.log('create user failed (users must be unique)');
     console.error(error);
     res.status(409);
-    res.send('username and email must be unique ');
+    res.send(error.message);
   })
 })
 
@@ -225,7 +225,7 @@ router.get('/email', (req, res) => {
   .catch(error => {
     console.error(error);
     res.status(404);
-    res.send("user doesn't exist");
+    res.send(error.message);
   })
 })
 
@@ -243,7 +243,7 @@ router.put('/changeEmail', passport.authenticate('basic', {session : false}), (r
   .catch(error => {
     console.error(error);
     res.status(409);
-    res.send("This email already has an account");
+    res.send(error.message);
   })
 })
 
@@ -263,7 +263,8 @@ router.put('/changePassword', passport.authenticate('basic', {session : false}),
   })
   .catch(error => {
     console.error(error);
-    res.sendStatus(500);
+    res.status(500);
+    res.sendS(error.message);
   })
 })
 
@@ -284,7 +285,7 @@ router.get('/id', (req, res) => {
   .catch(error => {
     console.error(error);
     res.status(404);
-    res.send("user doesn't exist.");
+    res.send(error.message);
   })
 })
 
