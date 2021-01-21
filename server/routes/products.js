@@ -106,7 +106,7 @@ router.post('/', [passport.authenticate('basic', {session : false}), fileUpload.
 // used to change any information in a posting. new information is in req.body
 router.put('/:id', [passport.authenticate('basic', {session : false}), fileUpload.array('images')], (req, res) => {
     var changeImages = false;
-    if (req.files.length > 0){ // images should change
+    if (req.files && req.files.length > 0){ // images should change
         changeImages = true;
     }
     db.query('select seller from products_table where id=$1', [req.params.id])    // product to change
