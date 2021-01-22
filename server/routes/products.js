@@ -109,6 +109,11 @@ router.put('/:id', [passport.authenticate('basic', {session : false}), fileUploa
     if (req.files && req.files.length > 0){ // images should change
         changeImages = true;
     }
+    if (!req.files || req.files.length === 0){ //nothing to do
+        res.status(204);
+        res.send({result : "ok"});
+        return;
+    }
     db.query('select seller from products_table where id=$1', [req.params.id])    // product to change
     .then(result => {
         if(result.rows.length === 0){ //no matching id found
