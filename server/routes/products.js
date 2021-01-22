@@ -183,7 +183,12 @@ router.put('/:id', [passport.authenticate('basic', {session : false}), fileUploa
         return db.query(sqlString, sqlArray)
     })
     .then(result => {
-        res.sendStatus(200);
+        if(changeImages){   // if new images are uploaded answer with 201
+            res.status(201);
+        }else{
+            res.status(200);
+        }
+        res.json({result : "ok"});
     })
     .catch(error => {
         console.error(error);
@@ -219,7 +224,8 @@ router.delete('/:id', passport.authenticate('basic', {session : false}), (req, r
         return db.query('delete from products_table where id=$1', [req.params.id])
     })
     .then(result => {
-        res.sendStatus(204)
+        res.status(204);
+        res.json({result : "ok"});
     })
     .catch(error => {
         console.error(error);
@@ -289,7 +295,9 @@ router.get('/', (req, res) => {
                 }
             }
         }
-        res.json(answer);
+        res.json({
+            products : answer
+        });
     })
     .catch(error => {
         console.error(error);

@@ -113,7 +113,13 @@ router.get('/validation/newUser/:username/:validationKey', (req, res) => {
 
 // reset account password. Needs email of the user in req.body
 router.post('/restore', (req, res) => {
-  if( !req.body.email || !ValidateEmail(req.body.email) ){ // not an email address
+  if( !req.body.email){ //missing email
+    console.log("missing email");
+    res.status(400);
+    res.send("missing email");
+    return;
+  }
+  if( !ValidateEmail(req.body.email) ){ // not an email address
     console.log("invalid email");
     res.status(400);
     res.send("invalid email");
@@ -146,7 +152,8 @@ router.post('/restore', (req, res) => {
   })
   .then(result => {
     console.log("email sent");
-    res.sendStatus(201);
+    res.status(201);
+    res.json({result : "ok"})
   })
   .catch(err => {
     res.status(404);
@@ -208,19 +215,34 @@ router.get('/validation/restorePw/:username/:validationKey', (req, res) => {
   })
 })
 
-//return email for the username in req.query
-router.get('/email', (req, res) => {
-  if(!req.query.username){
+//get info of a user. username, email or id in req.query
+router.get('/', (req, res) => {
+  if(!req.query.username && !req.query.id && !req.query.email){
     res.status(400);
-    res.send("missing username");
+    res.send("missing user");
     return;
   }
-  db.query('select * from user_table where username = $1', [req.query.username])
+  var sqlString = "";
+  var searchValue = undefined;
+  if(req.query.id){ //look by id
+    searchValue = req.query.id;
+    sqlString = 'select id, username, email from user_table where id = $1';
+  }else if(req.query.username){ //look by username
+    searchValue = req.query.username;
+    sqlString = 'select id, username, email from user_table where username = $1';
+  }
+  else if(req.query.email){ //look by email
+    searchValue = req.query.email;
+    sqlString = 'select id, username, email from user_table where email = $1';
+  }
+  db.query(sqlString, [searchValue])
   .then(result => {
     if(result.rows.length === 0) {  // no such user
       throw new Error("noUser");
     }
-    res.json(result.rows[0].email);
+    res.json({
+      user : result.rows[0]
+    });
   })
   .catch(error => {
     console.error(error);
@@ -229,64 +251,61 @@ router.get('/email', (req, res) => {
   })
 })
 
-//change email of a user. needs new email in req.body
-router.put('/changeEmail', passport.authenticate('basic', {session : false}), (req, res) => {
-  if(!req.body.email){
-    res.status(400);
-    res.send("missing email");
+/*  change password or email of a user.
+    Needs new info in req.body. Needs username + password in authenticate */
+router.put('/', passport.authenticate('basic', {session : false}), (req, res) => {
+  if(!req.body.email && !req.body.password){  //nothing to do
+    res.status(204);
+    res.send({result : "ok"});
     return;
   }
-  db.query('update user_table set email=$1 where username=$2', [req.body.email, req.user.username])
-  .then(result => {
-    res.sendStatus(200);
-  })
-  .catch(error => {
-    console.error(error);
-    res.status(409);
-    res.send(error.message);
-  })
-})
+  if(req.body.email && !ValidateEmail(req.body.email) ){ // not an email address
+    console.log("invalid email");
+    res.status(400);
+    res.send("invalid email")
+    return;
+  }
 
-//change Pw of user. needs new password in req.body
-router.put('/changePassword', passport.authenticate('basic', {session : false}), (req, res) => {
-  if(!req.body.password) {
-    res.status(400);
-    res.send("password missing");
-    return;
+  if (req.body.password && req.body.email){ // change both
+    bcrypt.hash(req.body.password, saltrounds)
+    .then(hash => {
+      return db.query('update user_table set password=$1, email=$2 where id=$3', [hash, req.body.email, req.user.id])
+    })
+    .then(result => {
+      res.status(200);
+      res.json({result : "ok"});
+    })
+    .catch(error => {
+      console.error(error);
+      res.status(409);
+      res.send(error.message);
+    })
+  }else if (req.body.email){ //change only email
+    db.query('update user_table set email=$1 where id=$2', [req.body.email, req.user.id])
+    .then(result => {
+      res.status(200);
+      res.json({result : "ok"});
+    })
+    .catch(error => {
+      console.error(error);
+      res.status(409);
+      res.send(error.message);
+    })
+  }else if (req.body.password){ // change only password
+    bcrypt.hash(req.body.password, saltrounds)
+    .then(hash => {
+      return db.query('update user_table set password=$1 where id=$2', [hash, req.user.id])
+    })
+    .then(result => {
+      res.status(200);
+      res.json({result : "ok"});
+    })
+    .catch(error => {
+      console.error(error);
+      res.status(500);
+      res.sendS(error.message);
+    })
   }
-  bcrypt.hash(req.body.password, saltrounds)
-  .then(hash => {
-    return db.query('update user_table set password=$1 where username=$2', [hash, req.user.username])
-  })
-  .then(result => {
-    res.sendStatus(200);
-  })
-  .catch(error => {
-    console.error(error);
-    res.status(500);
-    res.sendS(error.message);
-  })
-})
-
-//return id of the username in req.query
-router.get('/id', (req, res) => {
-  if(!req.query.username){
-    res.status(400);
-    res.send("username missing");
-    return;
-  }
-  db.query('select * from user_table where username = $1', [req.query.username])
-  .then(result => {
-    if(result.rows.length === 0) {  // no such user
-      throw new Error("noUser");
-    }
-    res.json(result.rows[0].id);
-  })
-  .catch(error => {
-    console.error(error);
-    res.status(404);
-    res.send(error.message);
-  })
 })
 
 module.exports = router;
