@@ -4,17 +4,17 @@ block content
   h1 Welcome
   p Documentation and Code can be found at https://github.com/tobias-mb/web-interfaces-exercise
   p routes are
-  p POST /login (login user - {username, password} in auth)
-  p POST /users (register new user - {username, password, email} in body)
-  p GET /users/validation/newUser/:username/:validationKey (email verification - get the link from email)
-  p POST /users/restore (password reset - {email} in body)
-  p GET /users/validation/restorePw/:username/:validationKey (confirm password reset - get the link from email)
-  p GET /users/email?username=name (get email address of user {name})
-  p GET /users/id?username=name (get id of user {name})
-  p PUT /users/changeEmail (change email address - {username, password} in auth, {email} in body)
-  p PUT /users/changePassword (change password - {username, password} in auth, {password} in body)
-  p POST /products (create new posting - {username, password} in auth, {title, description, category, location, images(array of strings), price, delivery} in body)
-  p PUT /products/:id (change a posting - {username, password} in auth, any changed information in body)
-  p DELETE /products/:id (delete a posting - {username, password} in auth)
-  p GET /products?param=something (get postings. query param(s) can be id, title, description, category, location, price, posting_date, delivery, seller (seller only by id). Search for price is a max price.)
+  p POST /login : login user - {username, password} in auth
+  p POST /users : register new user - {username, password, email} in body
+  p GET /users/validation/newUser/:username/:validationKey : email verification - a link matching this route is send in email
+  p POST /users/restore : password reset - {email} (of the user that wants to reset) in body
+  p GET /users/validation/restorePw/:username/:validationKey : confirm password reset - a link matching this route is send in email
+  p GET /users?param=value : get userinfo. {param} can be id, username or email (only one)
+  p PUT /users : change email address - {username, password} in auth, {email, password} (both are optional) in body.
+  p ----------------------------------------------------------------
+  p POST /products : create new item - {username, password} in auth, (Multipart Form){title, description, category, location, images(multipart form, so can have multiple), price, delivery} in body)
+  p PUT /products/:id  : change an item - {username, password} in auth, any changed information in body
+  p DELETE /products/:id : delete an item - {username, password} in auth
+  p GET /products?param=something : get items. query param(s) can be id, title, description, category, location, price, posting_date, delivery, seller (seller only by id).
+  p &nbsp;&nbsp;&nbsp;&nbsp; price searches for max price, posting_date for newer items. Any combination is also possible (combine params with "&")
 
