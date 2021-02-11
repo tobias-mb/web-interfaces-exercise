@@ -31,7 +31,7 @@ paths:
         '400':
           description: Missing required information or invalid email address.
         '409':
-          description: Email Already Taken
+          description: Email or Username Already Taken
       requestBody:
         content:
           application/json:
@@ -460,16 +460,6 @@ paths:
                     example: ok
         '201':
           description: 'Item changed and new images uploaded. returns {"result" : "ok"}'
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  result:
-                    type: string
-                    example: ok
-        '204':
-          description: 'Nothing to change (request was empty). returns {"result" : "ok"}'
           content:
             application/json:
               schema:
