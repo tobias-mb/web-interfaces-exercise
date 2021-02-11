@@ -8,6 +8,7 @@ const emailAuth = require('../emailAuth.json');
 const client = require('../client.json');
 
 const saltrounds = 10;
+const testMode = true;
 
 //email service
 var transporter = nodemailer.createTransport({
@@ -32,6 +33,7 @@ function ValidateEmail(mail)
 needs username, email, password in req.body  */
 router.post('/', (req,res) => {
   var insertID = 0;
+  var link = '';
   if(!req.body.password || !req.body.username || !req.body.email ){ //bad request
     console.log("username or password missing");
     res.status(400);
@@ -46,7 +48,7 @@ router.post('/', (req,res) => {
   }
 
   let validationKey = Math.floor(Math.random()*10000000);
-  let link = `${client.address}/users/validation/newUser/${req.body.username}/${validationKey}`;
+  link = `${client.address}/users/validation/newUser/${req.body.username}/${validationKey}`;
   let mailOptions={
     from: emailAuth.username,
     to : req.body.email,
@@ -71,9 +73,17 @@ router.post('/', (req,res) => {
   .then(result => {
     console.log("email sent")
     res.status(201);
-    res.json({
-      id : insertID
-    })
+    if(testMode){ // also send the link during testing (maybe do proper request to email api later)
+      res.json({
+        id : insertID,
+        link: link
+      })
+    }else{
+      res.json({
+        id : insertID
+      })
+    }
+    
   })
   .catch(error => {
     console.log('create user failed (users must be unique)');
@@ -127,7 +137,7 @@ router.post('/restore', (req, res) => {
   }
 
   let validationKey = Math.floor(Math.random()*10000000);
-  let link = null;
+  let link = '';
   let mailOptions=null;
 
   let foundUser = null;
@@ -153,7 +163,16 @@ router.post('/restore', (req, res) => {
   .then(result => {
     console.log("email sent");
     res.status(201);
-    res.json({result : "ok"})
+    if(testMode){  // also send the link during testing (maybe do proper request to email api later)
+      res.json({
+        result : "ok",
+        link : link
+      })
+    }else{
+      res.json({
+        result : "ok"
+      })
+    }
   })
   .catch(err => {
     res.status(404);

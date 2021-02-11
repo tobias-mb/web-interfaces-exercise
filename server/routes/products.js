@@ -72,7 +72,7 @@ router.post('/', [passport.authenticate('basic', {session : false}), fileUpload.
     }))
     //save the image links, remember IDs
     .then(result => {
-        console.log(result);
+        console.log(result.map(r => r.public_id));
         return Promise.all(result.map(img => {
             return db.query('insert into images_table (title, link) values($1, $2) returning id', [img.filename, img.secure_url]);
         }))
@@ -108,11 +108,6 @@ router.put('/:id', [passport.authenticate('basic', {session : false}), fileUploa
     var changeImages = false;
     if (req.files && req.files.length > 0){ // images should change
         changeImages = true;
-    }
-    if (!req.files || req.files.length === 0){ //nothing to do
-        res.status(204);
-        res.send({result : "ok"});
-        return;
     }
     db.query('select seller from products_table where id=$1', [req.params.id])    // product to change
     .then(result => {
