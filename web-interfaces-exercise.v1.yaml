@@ -285,10 +285,19 @@ paths:
                 properties:
                   id:
                     type: integer
+                    example: 1
+                  username:
+                    type: string
+                    example: tester
+                  email:
+                    type: string
+                    example: '1234'
               examples:
-                example-1:
+                example-2:
                   value:
-                    id: 71
+                    id: 1
+                    username: tester
+                    email: '1234'
         '401':
           description: Wrong or missing username + password
       description: Checks if username + password can get verification / is in the database.
